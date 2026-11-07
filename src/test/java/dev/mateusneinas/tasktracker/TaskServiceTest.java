@@ -23,7 +23,7 @@ class TaskServiceTest {
         assertEquals(1, service.list().size());
         assertTrue(service.complete(created.id()).completed());
         assertFalse(service.reopen(created.id()).completed());
-        assertFalse(service.list().getFirst().completed());
+        assertFalse(service.list().get(0).completed());
     }
 
     private static final class InMemoryRepository implements TaskRepository {
