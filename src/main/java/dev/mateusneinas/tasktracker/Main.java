@@ -24,6 +24,7 @@ public final class Main {
             case "add" -> add(service, args);
             case "list" -> list(service.list());
             case "done" -> System.out.println("Concluída: " + service.complete(parseId(args)).title());
+            case "reopen" -> System.out.println("Reaberta: " + service.reopen(parseId(args)).title());
             case "remove" -> { service.remove(parseId(args)); System.out.println("Tarefa removida."); }
             case "help" -> printUsage();
             default -> throw new IllegalArgumentException("Comando desconhecido: " + args[0]);
@@ -47,6 +48,6 @@ public final class Main {
     }
 
     private static void printUsage() {
-        System.out.println("Uso: add <título> | list | done <id> | remove <id> | help");
+        System.out.println("Uso: add <título> | list | done <id> | reopen <id> | remove <id> | help");
     }
 }

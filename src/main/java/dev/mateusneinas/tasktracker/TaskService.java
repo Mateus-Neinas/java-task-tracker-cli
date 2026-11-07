@@ -4,7 +4,7 @@ import java.time.Clock;
 import java.util.Comparator;
 import java.util.List;
 
-/** Centraliza as regras de criação, conclusão, remoção e ordenação de tarefas. */
+/** Centraliza as regras de criação, conclusão, reabertura, remoção e ordenação de tarefas. */
 public final class TaskService {
     private final TaskRepository repository;
     private final Clock clock;
@@ -35,6 +35,14 @@ public final class TaskService {
         List<Task> updated = tasks.stream().map(item -> item.id() == id ? item.complete() : item).toList();
         repository.saveAll(updated);
         return task.complete();
+    }
+
+    public Task reopen(long id) {
+        List<Task> tasks = repository.findAll();
+        Task task = findById(tasks, id);
+        List<Task> updated = tasks.stream().map(item -> item.id() == id ? item.reopen() : item).toList();
+        repository.saveAll(updated);
+        return task.reopen();
     }
 
     public void remove(long id) {
