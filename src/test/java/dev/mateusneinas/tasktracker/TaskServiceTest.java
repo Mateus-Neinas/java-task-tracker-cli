@@ -1,6 +1,7 @@
 package dev.mateusneinas.tasktracker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Clock;
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 class TaskServiceTest {
     @Test
-    void createsAndCompletesTask() {
+    void createsCompletesAndReopensTask() {
         InMemoryRepository repository = new InMemoryRepository();
         TaskService service = new TaskService(repository, Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC));
 
@@ -21,6 +22,8 @@ class TaskServiceTest {
         assertEquals(1, created.id());
         assertEquals(1, service.list().size());
         assertTrue(service.complete(created.id()).completed());
+        assertFalse(service.reopen(created.id()).completed());
+        assertFalse(service.list().getFirst().completed());
     }
 
     private static final class InMemoryRepository implements TaskRepository {
