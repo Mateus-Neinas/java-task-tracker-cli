@@ -6,7 +6,7 @@ Aplicação Java 17 de linha de comando para gerenciar tarefas locais, sem depen
 
 - Criar tarefas
 - Listar tarefas pendentes antes das concluídas
-- Concluir ou remover uma tarefa pelo id
+- Concluir, reabrir ou remover uma tarefa pelo id
 - Persistir dados localmente em `data/tasks.tsv`
 - Executar testes com JUnit 5
 
@@ -20,6 +20,7 @@ mvn package
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main add "Estudar Java"
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main list
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main done 1
+java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main reopen 1
 ```
 
 ## Arquitetura
@@ -34,12 +35,12 @@ A interface `TaskRepository` evita acoplamento entre as regras do sistema e a te
 
 | Classe | Responsabilidade |
 | --- | --- |
-| `Task` | Entidade imutável; valida id, título e data. `complete()` devolve uma cópia concluída. |
-| `TaskService` | Regras de negócio: `add`, `list`, `complete` e `remove`. |
+| `Task` | Entidade imutável; valida id, título e data. `complete()` e `reopen()` devolvem novas cópias com o status alterado. |
+| `TaskService` | Regras de negócio: `add`, `list`, `complete`, `reopen` e `remove`. |
 | `TaskRepository` | Contrato mínimo para carregar e gravar tarefas. |
 | `FileTaskRepository` | Lê e grava TSV; codifica títulos em Base64 para preservar caracteres especiais. |
-| `Main` | Interpreta argumentos do terminal e mostra o resultado ao usuário. |
-| `TaskServiceTest` | Teste da criação e conclusão usando repositório em memória. |
+| `Main` | Interpreta argumentos do terminal e mostra o resultado ao usuário; `parseId` valida comandos que recebem id. |
+| `TaskServiceTest` | Teste criação, conclusão e reabertura usando repositório em memória. |
 
 ## Próximos passos possíveis
 
