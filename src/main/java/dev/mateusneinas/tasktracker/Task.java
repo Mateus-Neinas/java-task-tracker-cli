@@ -16,4 +16,9 @@ public record Task(long id, String title, boolean completed, Instant createdAt) 
     public Task complete() {
         return new Task(id, title, true, createdAt);
     }
+
+    /** Retorna uma cópia desta tarefa marcada como pendente. */
+    public Task reopen() {
+        return new Task(id, title, false, createdAt);
+    }
 }
