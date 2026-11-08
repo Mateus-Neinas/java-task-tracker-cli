@@ -26,6 +26,19 @@ class TaskServiceTest {
         assertFalse(service.list().get(0).completed());
     }
 
+    @Test
+    void filtersTasksByCompletionStatus() {
+        InMemoryRepository repository = new InMemoryRepository();
+        TaskService service = new TaskService(repository, Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC));
+        Task pending = service.add("Ler");
+        Task done = service.add("Escrever");
+        service.complete(done.id());
+
+        assertEquals(List.of(pending), service.list(false));
+        assertEquals(List.of(done.complete()), service.list(true));
+        assertEquals(2, service.list().size());
+    }
+
     private static final class InMemoryRepository implements TaskRepository {
         private List<Task> tasks = new ArrayList<>();
         public List<Task> findAll() { return new ArrayList<>(tasks); }
