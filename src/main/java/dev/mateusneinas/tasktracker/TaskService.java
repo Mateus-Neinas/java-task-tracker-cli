@@ -24,7 +24,12 @@ public final class TaskService {
     }
 
     public List<Task> list() {
+        return list(null);
+    }
+
+    public List<Task> list(Boolean completed) {
         return repository.findAll().stream()
+                .filter(task -> completed == null || task.completed() == completed)
                 .sorted(Comparator.comparing(Task::completed).thenComparing(Task::id))
                 .toList();
     }
