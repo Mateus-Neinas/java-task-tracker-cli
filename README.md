@@ -5,7 +5,7 @@ Aplicação Java 17 de linha de comando para gerenciar tarefas locais, sem depen
 ## Funcionalidades
 
 - Criar tarefas
-- Listar tarefas pendentes antes das concluídas
+- Listar todas, somente pendentes ou somente concluídas
 - Concluir, reabrir ou remover uma tarefa pelo id
 - Persistir dados localmente em `data/tasks.tsv`
 - Executar testes com JUnit 5
@@ -19,9 +19,13 @@ mvn test
 mvn package
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main add "Estudar Java"
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main list
+java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main list pending
+java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main list done
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main done 1
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main reopen 1
 ```
+
+O filtro aceita `all`, `pending` ou `done`; sem filtro, `list` mostra todas as tarefas.
 
 ## Arquitetura
 
@@ -33,21 +37,16 @@ A interface `TaskRepository` evita acoplamento entre as regras do sistema e a te
 
 ## Guia rápido do código
 
-| Classe | Responsabilidade |
+| Classe/método | Responsabilidade |
 | --- | --- |
 | `Task` | Entidade imutável; valida id, título e data. `complete()` e `reopen()` devolvem novas cópias com o status alterado. |
-| `TaskService` | Regras de negócio: `add`, `list`, `complete`, `reopen` e `remove`. |
-| `TaskRepository` | Contrato mínimo para carregar e gravar tarefas. |
-| `FileTaskRepository` | Lê e grava TSV; codifica títulos em Base64 para preservar caracteres especiais. |
-| `Main` | Interpreta argumentos do terminal e mostra o resultado ao usuário; `parseId` valida comandos que recebem id. |
-| `TaskServiceTest` | Teste criação, conclusão e reabertura usando repositório em memória. |
-
-## Próximos passos possíveis
-
-- filtros por status
-- prazo e prioridade
-- exportação JSON
-- interface gráfica ou API REST
+| `TaskService.add` | Cria tarefa com id crescente e horário fornecido pelo `Clock`. |
+| `TaskService.list()` | Preserva a listagem completa e ordenada que já existia. |
+| `TaskService.list(Boolean)` | Filtra por status; `null` retorna todas, `false` pendentes e `true` concluídas. |
+| `TaskService.complete/reopen/remove` | Atualiza o status ou remove tarefa, validando o id existente. |
+| `TaskRepository` / `FileTaskRepository` | Contrato de armazenamento e implementação TSV local. |
+| `Main` | Interpreta argumentos; `list` valida o filtro e delega ao serviço. |
+| `TaskServiceTest` | Cobre criação, conclusão, reabertura e os dois filtros de status. |
 
 ## Licença
 

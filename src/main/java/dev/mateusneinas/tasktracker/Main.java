@@ -22,7 +22,7 @@ public final class Main {
         if (args.length == 0) { printUsage(); return; }
         switch (args[0]) {
             case "add" -> add(service, args);
-            case "list" -> list(service.list());
+            case "list" -> list(service, args);
             case "done" -> System.out.println("Concluída: " + service.complete(parseId(args)).title());
             case "reopen" -> System.out.println("Reaberta: " + service.reopen(parseId(args)).title());
             case "remove" -> { service.remove(parseId(args)); System.out.println("Tarefa removida."); }
@@ -37,6 +37,20 @@ public final class Main {
         System.out.println("Criada #" + task.id() + ": " + task.title());
     }
 
+    private static void list(TaskService service, String[] args) {
+        if (args.length > 2) throw new IllegalArgumentException("Uso: list [all|pending|done]");
+        Boolean completed = null;
+        if (args.length == 2) {
+            completed = switch (args[1]) {
+                case "all" -> null;
+                case "pending" -> false;
+                case "done" -> true;
+                default -> throw new IllegalArgumentException("Filtro inválido: " + args[1]);
+            };
+        }
+        list(service.list(completed));
+    }
+
     private static void list(List<Task> tasks) {
         if (tasks.isEmpty()) { System.out.println("Nenhuma tarefa cadastrada."); return; }
         tasks.forEach(task -> System.out.printf("#%d [%s] %s%n", task.id(), task.completed() ? "x" : " ", task.title()));
@@ -48,6 +62,6 @@ public final class Main {
     }
 
     private static void printUsage() {
-        System.out.println("Uso: add <título> | list | done <id> | reopen <id> | remove <id> | help");
+        System.out.println("Uso: add <título> | list [all|pending|done] | done <id> | reopen <id> | remove <id> | help");
     }
 }
