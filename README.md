@@ -7,6 +7,7 @@ Aplicação Java 17 de linha de comando para gerenciar tarefas locais, sem depen
 - Criar tarefas
 - Listar todas, somente pendentes ou somente concluídas
 - Concluir, reabrir ou remover uma tarefa pelo id
+- Exportar tarefas em JSON UTF-8
 - Persistir dados localmente em `data/tasks.tsv`
 - Executar testes com JUnit 5
 
@@ -21,8 +22,7 @@ java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Mai
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main list
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main list pending
 java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main list done
-java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main done 1
-java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main reopen 1
+java -cp target/java-task-tracker-cli-1.0.0.jar dev.mateusneinas.tasktracker.Main export data/tasks.json
 ```
 
 O filtro aceita `all`, `pending` ou `done`; sem filtro, `list` mostra todas as tarefas.
@@ -30,10 +30,11 @@ O filtro aceita `all`, `pending` ou `done`; sem filtro, `list` mostra todas as t
 ## Arquitetura
 
 ```
-Main (CLI) → TaskService (regras) → TaskRepository (porta) → FileTaskRepository (arquivo)
+Main (CLI) → TaskService (regras) → TaskRepository (porta) → FileTaskRepository (TSV)
+                   └──────────────→ TaskJsonExporter (JSON)
 ```
 
-A interface `TaskRepository` evita acoplamento entre as regras do sistema e a tecnologia de persistência. Por isso, é fácil trocar o arquivo por SQLite, uma API ou banco relacional posteriormente.
+A interface `TaskRepository` evita acoplamento entre as regras do sistema e a tecnologia de persistência. A exportação JSON é uma saída independente; não altera o arquivo TSV original.
 
 ## Guia rápido do código
 
@@ -41,12 +42,13 @@ A interface `TaskRepository` evita acoplamento entre as regras do sistema e a te
 | --- | --- |
 | `Task` | Entidade imutável; valida id, título e data. `complete()` e `reopen()` devolvem novas cópias com o status alterado. |
 | `TaskService.add` | Cria tarefa com id crescente e horário fornecido pelo `Clock`. |
-| `TaskService.list()` | Preserva a listagem completa e ordenada que já existia. |
-| `TaskService.list(Boolean)` | Filtra por status; `null` retorna todas, `false` pendentes e `true` concluídas. |
+| `TaskService.list()` / `list(Boolean)` | Lista todas as tarefas ou filtra pendentes/concluídas. |
 | `TaskService.complete/reopen/remove` | Atualiza o status ou remove tarefa, validando o id existente. |
+| `TaskJsonExporter.export` | Cria diretórios necessários e grava a lista em UTF-8 no destino solicitado. |
+| `TaskJsonExporter.toJson/escape` | Serializa os campos e escapa aspas, barras invertidas e caracteres de controle. |
+| `Main.export` | Valida o argumento de caminho e solicita a exportação das tarefas. |
 | `TaskRepository` / `FileTaskRepository` | Contrato de armazenamento e implementação TSV local. |
-| `Main` | Interpreta argumentos; `list` valida o filtro e delega ao serviço. |
-| `TaskServiceTest` | Cobre criação, conclusão, reabertura e os dois filtros de status. |
+| `TaskServiceTest` / `TaskJsonExporterTest` | Cobrem regras de tarefa, filtros e serialização JSON. |
 
 ## Licença
 

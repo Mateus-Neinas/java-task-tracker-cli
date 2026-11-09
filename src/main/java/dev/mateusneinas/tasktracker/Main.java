@@ -26,6 +26,7 @@ public final class Main {
             case "done" -> System.out.println("Concluída: " + service.complete(parseId(args)).title());
             case "reopen" -> System.out.println("Reaberta: " + service.reopen(parseId(args)).title());
             case "remove" -> { service.remove(parseId(args)); System.out.println("Tarefa removida."); }
+            case "export" -> export(service, args);
             case "help" -> printUsage();
             default -> throw new IllegalArgumentException("Comando desconhecido: " + args[0]);
         }
@@ -51,6 +52,13 @@ public final class Main {
         list(service.list(completed));
     }
 
+    private static void export(TaskService service, String[] args) {
+        if (args.length != 2) throw new IllegalArgumentException("Uso: export <arquivo.json>");
+        Path destination = Path.of(args[1]);
+        new TaskJsonExporter().export(service.list(), destination);
+        System.out.println("Tarefas exportadas para " + destination);
+    }
+
     private static void list(List<Task> tasks) {
         if (tasks.isEmpty()) { System.out.println("Nenhuma tarefa cadastrada."); return; }
         tasks.forEach(task -> System.out.printf("#%d [%s] %s%n", task.id(), task.completed() ? "x" : " ", task.title()));
@@ -62,6 +70,6 @@ public final class Main {
     }
 
     private static void printUsage() {
-        System.out.println("Uso: add <título> | list [all|pending|done] | done <id> | reopen <id> | remove <id> | help");
+        System.out.println("Uso: add <título> | list [all|pending|done] | done <id> | reopen <id> | remove <id> | export <arquivo.json> | help");
     }
 }
